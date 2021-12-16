@@ -20,9 +20,23 @@ jobs:
             2.1.x
             3.1.x
             6.0.x
-    - name: Remove signing
+    - name: Install Mono
       run: |
         sudo apt update
         sudo apt install mono-complete
         mono --version
-        dotnet tool install --global replace-in-file
+    - name: Remove signing
+      run: |
+        dotnet tool install --global replace-in-file 
+        replace-in-file ./NLoptNet/NLoptNet.csproj -set "SignAssembly>true" "SignAssembly>false"
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore -c Release
+    - name: Pack
+      run: dotnet pack --no-build -c Release /p:PackageVersion=0.0.0-local
+    - name: Test package
+      run: |
+        dotnet nuget add source ${{ github.workspace }}/pack -n="LocalNLopt"
+        dotnet test ./NLoptNet.NuGet.Tests/NLoptNet.NuGet.Tests.csproj -c Release /property:Platform="AnyCPU" 
+        dotnet test ./NLoptNet.NuGet.Tests/NLoptNet.NuGet.Tests.csproj -c Release /property:Platform="x64"
