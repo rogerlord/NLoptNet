@@ -1,0 +1,28 @@
+name: Linux with Mono
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: | 
+            2.1.x
+            3.1.x
+            6.0.x
+    - name: Remove signing
+      run: |
+        sudo apt update
+        sudo apt install mono-complete
+        mono --version
+        dotnet tool install --global replace-in-file
